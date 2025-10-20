@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Pickup.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
 #include "XRBasketballSimCharacter.generated.h"
@@ -31,6 +32,10 @@ class AXRBasketballSimCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
+	/** MappingContext */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* GameplayMappingContext;
+
 	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
@@ -39,12 +44,25 @@ class AXRBasketballSimCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
 
+	//Pickup/ShootAction
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ActionAction;
+
+	//InspectAction
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* InspectAction;
+
+	UPROPERTY(EditAnywhere)
+	class USceneComponent* HoldingComponent;
 	
 public:
+
 	AXRBasketballSimCharacter();
 
 protected:
+
 	virtual void BeginPlay();
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 		
@@ -64,12 +82,41 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Weapon)
 	bool GetHasRifle();
 
+	UPROPERTY(EditAnywhere)
+	class APickup* CurrentItem;
+
+	bool bCanMove;
+	bool bHoldingItem;
+	bool bInspecting;
+
+	float PitchMax;
+	float PitchMin;
+
+	FVector HoldingComp;
+	FRotator LastRotation;
+
+	FVector Start;
+	FVector ForwardVector;
+	FVector End;
+
+	FHitResult Hit;
+
+	FComponentQueryParams DefaultComponentQueryParams;
+	FCollisionResponseParams DefaultResponseParams;
+
 protected:
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void Inspect();
+	void StopInspecting();
+	void Action();
+
+	void ToggleMovement();
+	void ToggleItemPickup();
 
 protected:
 	// APawn interface
