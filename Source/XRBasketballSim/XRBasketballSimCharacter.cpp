@@ -39,7 +39,7 @@ AXRBasketballSimCharacter::AXRBasketballSimCharacter()
 
 
 	HoldingComponent = CreateDefaultSubobject<USceneComponent>(TEXT("HoldingComponent"));
-	HoldingComponent->SetRelativeLocation(FVector(100.0f, 0.0f, -30.0f));
+	HoldingComponent->SetRelativeLocation(FVector(50.0f, 0.0f, 0.0f));
 	HoldingComponent->SetupAttachment(FirstPersonCameraComponent);
 
 	CurrentItem = NULL;
@@ -94,11 +94,12 @@ void AXRBasketballSimCharacter::Tick(float DeltaTime) {
 	//controls camera zoom between inspecting and holding items
 	if (bInspecting) {
 		if (bHoldingItem) {
-			FirstPersonCameraComponent->SetFieldOfView(FMath::Lerp(FirstPersonCameraComponent->FieldOfView, 90.0f, 0.1f));
+			bCanMove = false;
+			FirstPersonCameraComponent->SetFieldOfView(FMath::Lerp(FirstPersonCameraComponent->FieldOfView, 70.0f, 0.1f));
 			HoldingComponent->SetRelativeLocation(FVector(0.0f, 50.0f, 50.0f));
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->ViewPitchMax = 179.90000002f;
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->ViewPitchMin = -179.90000002f;
-			CurrentItem->RotateActor();
+			//CurrentItem->RotateActor();
 		}
 		else {
 
@@ -110,7 +111,7 @@ void AXRBasketballSimCharacter::Tick(float DeltaTime) {
 
 		FirstPersonCameraComponent->SetFieldOfView(FMath::Lerp(FirstPersonCameraComponent->FieldOfView, 90.0f, 0.1f));
 		if (bHoldingItem) {
-			HoldingComponent->SetRelativeLocation(FVector(100.0f, 0.0f, -30.0f));
+			HoldingComponent->SetRelativeLocation(FVector(50.0f, 0.0f, 0.0f));
 		}
 	}
 }
@@ -147,7 +148,7 @@ void AXRBasketballSimCharacter::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr && bCanMove)
+	if (Controller != nullptr && bCanMove && !bInspecting)
 	{
 		// add movement 
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
@@ -160,7 +161,7 @@ void AXRBasketballSimCharacter::Look(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && bCanMove &&!bInspecting)
 	{
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
@@ -204,8 +205,9 @@ void AXRBasketballSimCharacter::StopInspecting() {
 	}
 }
 void AXRBasketballSimCharacter::ToggleMovement() {
-	bCanMove = !bCanMove;
+	
 	bInspecting = !bInspecting;
+	bCanMove = !bInspecting;
 	FirstPersonCameraComponent->bUsePawnControlRotation = !FirstPersonCameraComponent->bUsePawnControlRotation;
 	bUseControllerRotationYaw = !bUseControllerRotationYaw;
 
