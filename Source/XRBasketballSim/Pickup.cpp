@@ -1,5 +1,6 @@
-#include "Camera/CameraComponent.h"
 #include "Pickup.h"
+#include "XRBasketballSimCharacter.h"
+#include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 
@@ -11,14 +12,16 @@ APickup::APickup()
 
 	// create mesh component and enable physics
 	MyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MyMesh"));
-	MyMesh->SetSimulatePhysics(true);
+	MyMesh->SetEnableGravity(false);
+	MyMesh->SetSimulatePhysics(false);
+	MyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	// set mesh as root component
 	RootComponent = MyMesh;
 
 	// initialize pickup state
-	bHolding = false;
-	bGravity = true;
+	bHolding = true;
+	bGravity = false;
 }
 
 // called when the game starts or when spawned
@@ -47,6 +50,17 @@ void APickup::BeginPlay()
 			}
 		}
 	}
+
+	//Tells the band that is in the holding component that it is the held ball
+	AXRBasketballSimCharacter* BasketballChar = Cast<AXRBasketballSimCharacter>(MyCharacter);
+	if (BasketballChar)
+	{
+		BasketballChar->HeldBall = this;
+		BasketballChar->bHoldingItem = true;
+
+		MyMesh->IgnoreActorWhenMoving(MyCharacter, true);
+		MyCharacter->MoveIgnoreActorAdd(this);
+	}
 }
 
 // called every frame
@@ -57,6 +71,7 @@ void APickup::Tick(float DeltaTime)
 	// snap pickup to holding component when held
 	if (bHolding && HoldingComp)
 	{
+		MyMesh->SetSimulatePhysics(false);
 		SetActorLocationAndRotation(
 			HoldingComp->GetComponentLocation(),
 			HoldingComp->GetComponentRotation()
@@ -95,3 +110,27 @@ void APickup::Pickup()
 	}
 }
 
+void APickup::Shoot()
+{
+	// release and fire the ball
+	bHolding = false;
+	bGravity = true;
+
+	SetActorTickEnabled(false);
+
+	MyMesh->IgnoreActorWhenMoving(MyCharacter, false);
+	MyCharacter->MoveIgnoreActorRemove(this);
+
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+	MyMesh->SetCollisionProfileName(TEXT("PhysicsActor"));
+	MyMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	MyMesh->SetEnableGravity(true);
+	MyMesh->SetSimulatePhysics(true);
+
+
+	// apply forward impulse
+	ForwardVector = PlayerCamera->GetForwardVector();
+	MyMesh->AddImpulse(ForwardVector * ForceAmount * MyMesh->GetMass());
+
+}

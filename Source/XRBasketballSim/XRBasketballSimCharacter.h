@@ -59,6 +59,9 @@ public:
 	// initializes character components
 	AXRBasketballSimCharacter();
 
+	UPROPERTY(BlueprintReadWrite, Category = "Basketball")
+	APickup* HeldBall;
+
 protected:
 	// sets up input and camera limits
 	virtual void BeginPlay();

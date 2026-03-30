@@ -46,6 +46,9 @@ public:
 	UFUNCTION()
 	void Pickup();
 
+	//Shoots the ball
+	void Shoot();
+
 	// true when the object is currently attached to the holding component
 	bool bHolding;
 

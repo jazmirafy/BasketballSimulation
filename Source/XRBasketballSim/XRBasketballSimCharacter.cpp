@@ -79,7 +79,7 @@ void AXRBasketballSimCharacter::Tick(float DeltaTime)
 	DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 1, 0, 1);
 
 	// detect pickup objects when not holding anything
-	if (!bHoldingItem)
+	/*if (!bHoldingItem)
 	{
 		if (GetWorld()->LineTraceSingleByChannel(
 			Hit, Start, End, ECC_Visibility,
@@ -94,7 +94,7 @@ void AXRBasketballSimCharacter::Tick(float DeltaTime)
 		{
 			CurrentItem = NULL;
 		}
-	}
+	}*/
 
 	// camera behavior while inspecting or holding items
 	if (bInspecting)
@@ -161,7 +161,7 @@ void AXRBasketballSimCharacter::SetupPlayerInputComponent(UInputComponent* Playe
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AXRBasketballSimCharacter::Look);
 
 		// pickup / throw input
-		EnhancedInputComponent->BindAction(ActionAction, ETriggerEvent::Triggered, this, &AXRBasketballSimCharacter::Action);
+		EnhancedInputComponent->BindAction(ActionAction, ETriggerEvent::Started, this, &AXRBasketballSimCharacter::Action);
 
 		// inspect input
 		EnhancedInputComponent->BindAction(InspectAction, ETriggerEvent::Triggered, this, &AXRBasketballSimCharacter::Inspect);
@@ -196,15 +196,18 @@ void AXRBasketballSimCharacter::Look(const FInputActionValue& Value)
 // action button handler
 void AXRBasketballSimCharacter::Action()
 {
-	if (CurrentItem && !bInspecting)
+	if (HeldBall && !bInspecting)
 	{
-		ToggleItemPickup();
+		bHoldingItem = false;
+		HeldBall->Shoot();
+		HeldBall = NULL;
 	}
 }
 
 // begin inspect mode
 void AXRBasketballSimCharacter::Inspect()
 {
+	bInspecting = true;
 	if (bHoldingItem)
 	{
 		LastRotation = GetControlRotation();
