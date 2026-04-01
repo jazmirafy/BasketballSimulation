@@ -134,3 +134,30 @@ void APickup::Shoot()
 	MyMesh->AddImpulse(ForwardVector * ForceAmount * MyMesh->GetMass());
 
 }
+
+void APickup::ReturnToHand()
+{
+	// reset ball state back to held
+	bHolding = true;
+	bGravity = false;
+
+	// re-enable tick so it snaps to hand
+	SetActorTickEnabled(true);
+
+	// disable physics and collision
+	MyMesh->SetSimulatePhysics(false);
+	MyMesh->SetEnableGravity(false);
+	MyMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	// re-add movement ignore so ball doesn't push player
+	MyMesh->IgnoreActorWhenMoving(MyCharacter, true);
+	MyCharacter->MoveIgnoreActorAdd(this);
+
+	// re-register with character
+	AXRBasketballSimCharacter* BasketballChar = Cast<AXRBasketballSimCharacter>(MyCharacter);
+	if (BasketballChar)
+	{
+		BasketballChar->HeldBall = this;
+		BasketballChar->bHoldingItem = true;
+	}
+}
