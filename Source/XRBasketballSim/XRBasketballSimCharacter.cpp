@@ -76,7 +76,7 @@ void AXRBasketballSimCharacter::Tick(float DeltaTime)
 	End = (ForwardVector * 300.0f) + Start;
 
 	// draw debug line for interaction trace
-	DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 1, 0, 1);
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Cyan, false, 1, 0, 1);
 
 	// detect pickup objects when not holding anything
 	/*if (!bHoldingItem)
