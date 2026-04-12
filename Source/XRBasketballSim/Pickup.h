@@ -46,6 +46,12 @@ public:
 	UFUNCTION()
 	void Pickup();
 
+	//Shoots the ball
+	void Shoot();
+
+	UFUNCTION(BlueprintCallable)
+	void ReturnToHand();
+
 	// true when the object is currently attached to the holding component
 	bool bHolding;
 
